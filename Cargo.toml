@@ -1,0 +1,24 @@
+[package]
+name = "tower-real-ip"
+version = "0.1.0"
+edition = "2024"
+authors = ["houseme <housemecn@gmail.com>"]
+description = "A production-ready Tower middleware for resolving the real client IP via trusted proxies."
+license = "MIT or Apache-2.0"
+repository = "https://github.com/houseme/tower-real-ip"
+keywords = ["middleware", "tower", "http", "real-ip", "proxy"]
+categories = ["network-programming", "web-programming"]
+readme = "README.md"
+
+[dependencies]
+axum = { version = "0.8", default-features = false, features = ["tokio"] }
+tower = "0.5.2"
+http = "1.4.0"
+tokio = { version = "1.48", features = ["full"] }
+ipnetwork = "0.20"
+tracing = "0.1"
+
+
+[dev-dependencies]
+tracing-subscriber = "0.3"
+axum = { version = "0.8", default-features = false, features = ["tokio", "http1", "http2"] }
