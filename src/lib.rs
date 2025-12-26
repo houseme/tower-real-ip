@@ -156,33 +156,32 @@ where
             // 2. The Core Algorithm: Trusted Proxy Traversal
             if let Some(peer_ip) = remote_addr {
                 // Only attempt to parse headers if the direct peer is trusted
-                if config.is_trusted(&peer_ip) {
-                    if let Some(xff_val) = headers.get("x-forwarded-for") {
-                        if let Ok(xff_str) = xff_val.to_str() {
-                            // Parse the comma-separated list
-                            // List: Client, Proxy1, Proxy2
-                            // We reverse iterate: Proxy2 -> Proxy1 -> Client
-                            let ips: Vec<&str> = xff_str.split(',').map(|s| s.trim()).collect();
+                if config.is_trusted(&peer_ip)
+                    && let Some(xff_val) = headers.get("x-forwarded-for")
+                    && let Ok(xff_str) = xff_val.to_str()
+                {
+                    // Parse the comma-separated list
+                    // List: Client, Proxy1, Proxy2
+                    // We reverse iterate: Proxy2 -> Proxy1 -> Client
+                    let ips: Vec<&str> = xff_str.split(',').map(|s| s.trim()).collect();
 
-                            for ip_str in ips.iter().rev() {
-                                if let Ok(ip) = IpAddr::from_str(ip_str) {
-                                    if !config.is_trusted(&ip) {
-                                        // Found the first untrusted IP (looking backwards)
-                                        // This is the Client.
-                                        resolved_ip = ip;
-                                        break;
-                                    }
-                                    // If trusted, continue strictly to the left
-                                } else {
-                                    warn!("Skipping invalid IP in X-Forwarded-For: {}", ip_str);
-                                }
+                    for ip_str in ips.iter().rev() {
+                        if let Ok(ip) = IpAddr::from_str(ip_str) {
+                            if !config.is_trusted(&ip) {
+                                // Found the first untrusted IP (looking backwards)
+                                // This is the Client.
+                                resolved_ip = ip;
+                                break;
                             }
-                            // Edge case: If all IPs in header are trusted, the loop finishes.
-                            // The `resolved_ip` remains the last trusted one (or peer),
-                            // but technically if strictly all are trusted, the request originates
-                            // from your internal network. We keep the peer or last logic.
+                            // If trusted, continue strictly to the left
+                        } else {
+                            warn!("Skipping invalid IP in X-Forwarded-For: {}", ip_str);
                         }
                     }
+                    // Edge case: If all IPs in header are trusted, the loop finishes.
+                    // The `resolved_ip` remains the last trusted one (or peer),
+                    // but technically if strictly all are trusted, the request originates
+                    // from your internal network. We keep the peer or last logic.
                 }
             }
 
