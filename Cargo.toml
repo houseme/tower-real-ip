@@ -12,7 +12,7 @@ readme = "README.md"
 
 [dependencies]
 axum = { version = "0.8", default-features = false, features = ["tokio"] }
-tower = "0.5.2"
+tower = "0.5.3"
 http = "1.4.0"
 tokio = { version = "1.48", features = ["full"] }
 ipnetwork = "0.21"
